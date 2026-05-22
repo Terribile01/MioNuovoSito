@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Crosta - Pizza Artigianale al Taglio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter per leggibilità, Playfair Display per eleganza artigianale -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Font Awesome per Icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configurazione Tema Personalizzato con Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amberCrosta: '#E8A838',
+                        rossoPassata: '#C02E1D',
+                        beigeFarina: '#F3EFE0',
+                        neroCarbone: '#1C1A17',
+                        scuroOpaco: '#2A2621',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-overlay {
+            background: linear-gradient(to bottom, rgba(28,26,23,0.3) 0%, rgba(28,26,23,0.95) 100%);
+        }
+    </style>
+</head>
+<body class="bg-beigeFarina text-neroCarbone font-sans min-h-screen selection:bg-amberCrosta selection:text-neroCarbone relative">
+
+<script>
+    // Inizializzazione Web Audio API per ASMR Soundboard
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    // Generatore di suono "CRACK" (Crosta croccante)
+    function playCrackSound() {
+        initAudio();
+        const duration = 0.25;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+            const t = i / audioCtx.sampleRate;
+            const noise = Math.random() * 2 - 1;
+            const envelope = Math.exp(-25 * t) + (t > 0.05 && t < 0.1 ? Math.random() * 0.3 * Math.exp(-15 * (t - 0.05)) : 0);
+            data[i] = noise * envelope;
+        }
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1200;
+        filter.Q.value = 1.5;
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+        source.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        source.start();
+
+        showToast("🔊 Sentito il crunch della crosta artigianale?");
+    }
+
+    // Generatore di suono "SFORNATA" (Sfrigolio dell'olio bollente nel forno)
+    function playSizzleSound() {
+        initAudio();
+        const duration = 1.8;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            const t = i / audioCtx.sampleRate;
+            const noise = Math.random() * 2 - 1;
+            const pop = Math.random() > 0.992 ? Math.sin(i * 0.15) * 0.8 : 0;
+            const envelope = Math.max(0, 1 - (t / duration));
+            data[i] = (noise * 0.15 + pop * 0.4) * envelope;
+        }
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 2500;
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+        source.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        source.start();
+
+        showToast("🔥 Senti lo sfrigolio della teglia fumante appena uscita!");
+    }
+
+    // Funzione Toast di Notifica
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+    }
+
+    // Gestione Menu Mobile Drawer
+    function toggleMobileMenu() {
+        const drawer = document.getElementById('mobile-drawer');
+        const isOpen = !drawer.classList.contains('translate-x-full');
+        if (isOpen) {
+            drawer.classList.add('translate-x-full');
+        } else {
+            drawer.classList.remove('translate-x-full');
+        }
+    }
+</script>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neroCarbone text-beigeFarina border border-amberCrosta/30 px-6 py-3 rounded-full shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 z-50 text-sm font-semibold flex items-center gap-2">
+    <!-- Contenuto dinamico impostato da JS -->
+</div>
+
+<!-- Header / Navigazione -->
+<header class="sticky top-0 z-40 bg-beigeFarina/90 backdrop-blur-md border-b border-neroCarbone/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-rossoPassata text-3xl font-serif font-bold tracking-tight">La Crosta</span>
+            <span class="hidden sm:inline-block bg-amberCrosta/20 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-amberCrosta/30">Artigianale</span>
+        </div>
+        
+        <!-- Menu Desktop -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
+            <a href="#ilmetodo" class="hover:text-rossoPassata transition-colors">Il Nostro Metodo</a>
+            <a href="#menu" class="hover:text-rossoPassata transition-colors">Il Menù</a>
+            <a href="#createglia" class="hover:text-rossoPassata transition-colors">Componi Teglia</a>
+            <a href="#social" class="hover:text-rossoPassata transition-colors">IG Experience</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+            <!-- Pulsante Prenota sempre visibile -->
+            <a href="#createglia" class="bg-rossoPassata hover:bg-red-700 text-beigeFarina text-xs sm:text-sm font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2">
+                <i class="fa-solid fa-pizza-slice"></i> Prenota una Teglia
+            </a>
+            
+            <!-- Bottone Hamburger per piccoli schermi -->
+            <button onclick="toggleMobileMenu()" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-neroCarbone/10 text-neroCarbone bg-white shadow-sm focus:outline-none">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Menu Drawer (Slide-out da destra) -->
+<div id="mobile-drawer" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transform translate-x-full transition-transform duration-300 md:hidden flex justify-end">
+    <!-- Overlay click-to-close -->
+    <div onclick="toggleMobileMenu()" class="absolute inset-0"></div>
+    
+    <div class="relative w-80 max-w-sm bg-beigeFarina h-full shadow-2xl p-6 flex flex-col justify-between z-10 border-l border-neroCarbone/10">
+        <div>
+            <!-- Header Drawer -->
+            <div class="flex items-center justify-between border-b border-neroCarbone/10 pb-4 mb-8">
+                <span class="text-rossoPassata text-2xl font-serif font-bold">La Crosta</span>
+                <button onclick="toggleMobileMenu()" class="w-8 h-8 rounded-full border border-neroCarbone/10 flex items-center justify-center text-neroCarbone bg-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Link di Navigazione Mobile -->
+            <nav class="flex flex-col gap-6 text-lg font-semibold tracking-wide text-neroCarbone">
+                <a href="#ilmetodo" onclick="toggleMobileMenu()" class="hover:text-rossoPassata flex items-center gap-3 py-2 border-b border-neroCarbone/5"><i class="fa-solid fa-wheat-awn text-amberCrosta"></i> Il Nostro Metodo</a>
+                <a href="#menu" onclick="toggleMobileMenu()" class="hover:text-rossoPassata flex items-center gap-3 py-2 border-b border-neroCarbone/5"><i class="fa-solid fa-utensils text-amberCrosta"></i> Il Menù</a>
+                <a href="#createglia" onclick="toggleMobileMenu()" class="hover:text-rossoPassata flex items-center gap-3 py-2 border-b border-neroCarbone/5"><i class="fa-solid fa-sliders text-amberCrosta"></i> Componi Teglia</a>
+                <a href="#social" onclick="toggleMobileMenu()" class="hover:text-rossoPassata flex items-center gap-3 py-2 border-b border-neroCarbone/5"><i class="fa-brands fa-instagram text-amberCrosta"></i> IG Experience</a>
+            </nav>
+        </div>
+        
+        <!-- Info Contatti Bottom Drawer -->
+        <div class="border-t border-neroCarbone/10 pt-6 space-y-4 text-center">
+            <p class="text-xs text-stone-500 font-medium">Sforniamo felicità ogni giorno dalle 11:00 alle 22:00</p>
+            <a href="https://wa.me/3937910382103" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp"></i> Chat Rapida WhatsApp
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="relative bg-neroCarbone text-beigeFarina py-16 lg:py-28 overflow-hidden">
+    <div class="absolute top-1/4 -left-36 w-96 h-96 rounded-full bg-amberCrosta/10 blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-36 w-96 h-96 rounded-full bg-rossoPassata/10 blur-[100px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Testi Principali -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-xs text-amberCrosta font-semibold uppercase tracking-wider">
+                    <span class="w-2 h-2 rounded-full bg-amberCrosta animate-pulse"></span> Variante Strategica 1: Artigianato Puro
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold leading-tight">
+                    Il sapore vero ha bisogno di <span class="italic text-amberCrosta">tempo</span>.
+                </h1>
+                <p class="text-lg text-stone-300 max-w-2xl leading-relaxed">
+                    Nessuna scorciatoia. Utilizziamo farine locali macinate a pietra, idratiamo l'impasto all'80% e lo lasciamo maturare per 48 ore intere. Il risultato? Una pizza al taglio digeribile, leggera e incredibilmente croccante alla base.
+                </p>
+                
+                <!-- Pulsanti di interazione e ASMR -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+                    <a href="#createglia" class="bg-amberCrosta hover:bg-amber-500 text-neroCarbone text-base font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all text-center flex items-center justify-center gap-2">
+                        Componi Teglia <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <button onclick="playCrackSound()" class="border border-white/20 hover:border-amberCrosta/50 bg-white/5 hover:bg-white/10 text-beigeFarina font-semibold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-volume-high text-amberCrosta animate-bounce"></i> Senti il "Crack" (ASMR)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                    <div>
+                        <div class="text-3xl lg:text-4xl font-serif font-bold text-amberCrosta">48h</div>
+                        <div class="text-xs text-stone-400 mt-1 uppercase tracking-wider font-semibold">Lievitazione Lenta</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl lg:text-4xl font-serif font-bold text-amberCrosta">80%</div>
+                        <div class="text-xs text-stone-400 mt-1 uppercase tracking-wider font-semibold">Idratazione</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl lg:text-4xl font-serif font-bold text-amberCrosta">100%</div>
+                        <div class="text-xs text-stone-400 mt-1 uppercase tracking-wider font-semibold">Ingredienti Locali</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Illustrativa Visual con Immagine Reale -->
+            <div class="lg:col-span-5 relative">
+                <div class="bg-gradient-to-tr from-scuroOpaco to-neroCarbone border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+                    <!-- Badge di Sfornata -->
+                    <div class="absolute -top-4 -right-4 bg-rossoPassata text-beigeFarina text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider shadow-lg transform rotate-3 z-20">
+                        🔥 Calda di Forno
+                    </div>
+
+                    <!-- Rappresentazione Visiva della Pizza in teglia con Foto Reale -->
+                    <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-orange-950 flex items-center justify-center group mb-6 border border-white/10 shadow-inner">
+                        <img src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&q=80&w=600" alt="Pizza Romana in Teglia" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.src='https://placehold.co/600x450/C02E1D/FFFFFF?text=Pizza+Calda'">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+                        
+                        <!-- Pulsante per far suonare la sfornata -->
+                        <button onclick="playSizzleSound()" class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 gap-3 z-10">
+                            <span class="w-16 h-16 rounded-full bg-rossoPassata flex items-center justify-center text-white text-xl shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </span>
+                            <span class="text-sm font-semibold text-beigeFarina tracking-wide uppercase">Ascolta lo Sfrigolio</span>
+                        </button>
+                    </div>
+
+                    <!-- Dettagli della teglia -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-serif text-xl font-bold text-amberCrosta">La Speciale del Giorno</h3>
+                            <span class="text-sm bg-amberCrosta/10 text-amberCrosta border border-amberCrosta/20 px-3 py-1 rounded-full font-medium">Bestseller</span>
+                        </div>
+                        <p class="text-sm text-stone-300">
+                            Salsa di pomodoro San Marzano DOP, fior di latte locale, salsiccia umbra a km 0, patate cotte a legna e un filo d'olio extravergine a crudo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Sezione Metodo -->
+<section id="ilmetodo" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto space-y-4 mb-20">
+            <h2 class="text-amberCrosta font-bold text-sm uppercase tracking-widest">Metodo Tradizionale</h2>
+            <p class="text-3xl sm:text-4xl font-serif font-bold text-neroCarbone">Perché la nostra pizza è diversa</p>
+            <p class="text-stone-600">
+                La variante artigianale si basa sul rispetto assoluto delle materie prime e dei tempi della chimica naturale. Nessun accelerante, solo cura millimetrica.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            
+            <!-- Pilastro 1 -->
+            <div class="bg-beigeFarina/50 border border-neroCarbone/5 p-8 rounded-2xl relative hover:shadow-xl transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-rossoPassata text-beigeFarina flex items-center justify-center text-xl font-bold mb-6 group-hover:scale-110 transition-transform">
+                    48h
+                </div>
+                <h3 class="font-serif text-xl font-bold mb-3">La Maturazione Lenta</h3>
+                <p class="text-sm text-stone-600 leading-relaxed">
+                    Lasciamo riposare l'impasto in cella a temperatura controllata per due giorni. Questo permette ai lieviti di scomposizione di fare il lavoro pesante, rendendo il trancio incredibilmente leggero e digeribile.
+                </p>
+            </div>
+
+            <!-- Pilastro 2 -->
+            <div class="bg-beigeFarina/50 border border-neroCarbone/5 p-8 rounded-2xl relative hover:shadow-xl transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-amberCrosta text-neroCarbone flex items-center justify-center text-xl font-bold mb-6 group-hover:scale-110 transition-transform">
+                    80%
+                </div>
+                <h3 class="font-serif text-xl font-bold mb-3">Alta Idratazione</h3>
+                <p class="text-sm text-stone-600 leading-relaxed">
+                    Utilizziamo 800g di acqua per ogni chilo di farina. Questa altissima idratazione genera in cottura le grandi bolle d'aria nell'impasto (l'alveolatura), rendendo la pizza soffice dentro e super croccante fuori.
+                </p>
+            </div>
+
+            <!-- Pilastro 3 -->
+            <div class="bg-beigeFarina/50 border border-neroCarbone/5 p-8 rounded-2xl relative hover:shadow-xl transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-stone-900 text-beigeFarina flex items-center justify-center text-xl font-bold mb-6 group-hover:scale-110 transition-transform">
+                    Km0
+                </div>
+                <h3 class="font-serif text-xl font-bold mb-3">Ingredienti del Territorio</h3>
+                <p class="text-sm text-stone-600 leading-relaxed">
+                    Nessun prodotto industriale. Collaboriamo solo con piccoli caseifici e agricoltori del territorio per offrirti verdure fresche di stagione, salumi nostrani e latticini lavorati in giornata.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- Sezione Menù -->
+<section id="menu" class="py-24 bg-beigeFarina/30 border-t border-b border-neroCarbone/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div class="space-y-3">
+                <h2 class="text-rossoPassata font-bold text-sm uppercase tracking-widest">Le Nostre Teglie</h2>
+                <p class="text-3xl sm:text-4xl font-serif font-bold text-neroCarbone">I Gusti della Tradizione</p>
+            </div>
+            
+            <!-- Selettori Tab -->
+            <div class="flex flex-wrap gap-2 bg-neroCarbone/5 p-1 rounded-xl self-start md:self-auto">
+                <button onclick="switchTab('tutte')" id="tab-tutte" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-semibold transition-all bg-neroCarbone text-beigeFarina">Tutte</button>
+                <button onclick="switchTab('classiche')" id="tab-classiche" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-neroCarbone">Le Classiche</button>
+                <button onclick="switchTab('speciali')" id="tab-speciali" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-neroCarbone">Le Speciali</button>
+            </div>
+        </div>
+
+        <!-- Griglia dei Prodotti del Menu con Immagini Reali -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Prodotto 1 -->
+            <div class="menu-item classiche bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div class="aspect-[4/3] bg-amberCrosta/10 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&q=80&w=600" alt="Margherita di Campagna" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x450/E8A838/FFFFFF?text=Margherita'">
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-serif text-lg font-bold">Margherita di Campagna</h3>
+                        <span class="text-rossoPassata font-bold">€12.00 / teglia</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Pomodoro fiaschetto locale, fior di latte a crudo, basilico fresco, olio EVO.</p>
+                </div>
+            </div>
+
+            <!-- Prodotto 2 -->
+            <div class="menu-item classiche bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div class="aspect-[4/3] bg-amberCrosta/10 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&q=80&w=600" alt="Rossa Rustica con Acciughe" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x450/E8A838/FFFFFF?text=Pizza+Rossa'">
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-serif text-lg font-bold">Rossa Rustica con Acciughe</h3>
+                        <span class="text-rossoPassata font-bold">€10.00 / teglia</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Doppia passata rustica di pomodoro, origano di montagna, acciughe del golfo, capperi selvatici.</p>
+                </div>
+            </div>
+
+            <!-- Prodotto 3 -->
+            <div class="menu-item speciali bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div class="aspect-[4/3] bg-amberCrosta/10 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=600" alt="Patate, Rosmarino & Lardo" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x450/E8A838/FFFFFF?text=Pizza+Patate'">
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-serif text-lg font-bold">Patate, Rosmarino & Lardo</h3>
+                        <span class="text-rossoPassata font-bold">€15.00 / teglia</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Patate silane cotte al forno, rosmarino selvatico fresco, lardo di colonnata IGP.</p>
+                </div>
+            </div>
+
+            <!-- Prodotto 4 -->
+            <div class="menu-item speciali bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div class="aspect-[4/3] bg-amberCrosta/10 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&q=80&w=600" alt="Fiori di Zucca e Alici" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x450/E8A838/FFFFFF?text=Fiori+di+Zucca'">
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-serif text-lg font-bold">Fiori di Zucca e Alici</h3>
+                        <span class="text-rossoPassata font-bold">€16.00 / teglia</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Fiori di zucca dell'orto, alici dissalate, fior di latte a crudo, stracciatella.</p>
+                </div>
+            </div>
+
+            <!-- Prodotto 5 -->
+            <div class="menu-item classiche bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div class="aspect-[4/3] bg-amberCrosta/10 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&q=80&w=600" alt="Marinara del Porto" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x450/E8A838/FFFFFF?text=Marinara'">
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-serif text-lg font-bold">Marinara del Porto</h3>
+                        <span class="text-rossoPassata font-bold">€9.00 / teglia</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Salsa di pomodoro, aglio rosso affettato fine, origano, olio al basilico fatto in casa.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+    function switchTab(type) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-neroCarbone', 'text-beigeFarina');
+            btn.classList.add('text-stone-600', 'hover:text-neroCarbone');
+        });
+        
+        const activeBtn = document.getElementById('tab-' + type);
+        activeBtn.classList.remove('text-stone-600', 'hover:text-neroCarbone');
+        activeBtn.classList.add('bg-neroCarbone', 'text-beigeFarina');
+
+        document.querySelectorAll('.menu-item').forEach(item => {
+            if (type === 'tutte') {
+                item.classList.remove('hidden');
+            } else {
+                if (item.classList.contains(type)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            }
+        });
+    }
+</script>
+
+<!-- Sezione Configura Teglia -->
+<section id="createglia" class="py-24 bg-white relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto space-y-4 mb-16">
+            <h2 class="text-amberCrosta font-bold text-sm uppercase tracking-widest">Configuratore Artigianale</h2>
+            <p class="text-3xl sm:text-4xl font-serif font-bold text-neroCarbone">Componi la tua Teglia</p>
+            <p class="text-stone-600">
+                Scegli la farina per l'impasto a 48 ore di lievitazione e aggiungi gli ingredienti freschi del giorno. Vedrai il prezzo stimato in tempo reale.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-12 items-start">
+            
+            <!-- Pannello di Configurazione delle Scelte -->
+            <div class="lg:col-span-7 bg-beigeFarina/30 border border-neroCarbone/5 rounded-3xl p-6 sm:p-8 space-y-8">
+                
+                <!-- 1. Tipo di Impasto -->
+                <div class="space-y-4">
+                    <label class="block font-serif text-lg font-bold text-neroCarbone">1. Scegli la Base dell'Impasto</label>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        
+                        <!-- Opzione Impasto Tipo 1 -->
+                        <div onclick="selectBase('farina1', 8.00)" id="base-farina1" class="base-option cursor-pointer p-4 rounded-xl border-2 border-rossoPassata bg-white transition-all space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm">Macinata a Pietra Tipo 1</span>
+                                <span class="text-xs bg-rossoPassata/10 text-rossoPassata px-2 py-0.5 rounded-full font-bold">€ 8.00</span>
+                            </div>
+                            <p class="text-xs text-stone-500">Classica, croccante e ricca di fibre. Idratazione 80%.</p>
+                        </div>
+
+                        <!-- Opzione Impasto Tipo 2 -->
+                        <div onclick="selectBase('farinaIntegra', 9.50)" id="base-farinaIntegra" class="base-option cursor-pointer p-4 rounded-xl border border-neroCarbone/10 bg-white hover:border-amberCrosta transition-all space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm">Integrale con Grani Antichi</span>
+                                <span class="text-xs bg-amberCrosta/10 text-amberCrosta px-2 py-0.5 rounded-full font-bold">€ 9.50</span>
+                            </div>
+                            <p class="text-xs text-stone-500">Aroma tostato rustico, altamente digeribile.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 2. Condimenti Base -->
+                <div class="space-y-4">
+                    <label class="block font-serif text-lg font-bold text-neroCarbone">2. Aggiungi il Cuore (Latticini e salse)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <button onclick="toggleTopping('mozzarella', 2.50)" id="top-mozzarella" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Fior di Latte</span>
+                            <span class="text-stone-400 font-bold">+€2.50</span>
+                        </button>
+                        <button onclick="toggleTopping('pomodoro', 1.50)" id="top-pomodoro" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Passata San Marzano</span>
+                            <span class="text-stone-400 font-bold">+€1.50</span>
+                        </button>
+                        <button onclick="toggleTopping('stracciatella', 3.50)" id="top-stracciatella" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Stracciatella</span>
+                            <span class="text-stone-400 font-bold">+€3.50</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Salumi e Verdure Locali -->
+                <div class="space-y-4">
+                    <label class="block font-serif text-lg font-bold text-neroCarbone">3. Farciture del Territorio (Salumi e Orto)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <button onclick="toggleTopping('salsiccia', 3.00)" id="top-salsiccia" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Salsiccia Umbra</span>
+                            <span class="text-stone-400 font-bold">+€3.00</span>
+                        </button>
+                        <button onclick="toggleTopping('patate', 2.00)" id="top-patate" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Patate al Forno</span>
+                            <span class="text-stone-400 font-bold">+€2.00</span>
+                        </button>
+                        <button onclick="toggleTopping('fiori', 2.50)" id="top-fiori" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Fiori di Zucca</span>
+                            <span class="text-stone-400 font-bold">+€2.50</span>
+                        </button>
+                        <button onclick="toggleTopping('lardo', 3.00)" id="top-lardo" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Lardo di Colonnata</span>
+                            <span class="text-stone-400 font-bold">+€3.00</span>
+                        </button>
+                        <button onclick="toggleTopping('funghi', 2.50)" id="top-funghi" class="topping-btn py-3 px-4 rounded-xl border border-neroCarbone/10 bg-white text-xs font-semibold hover:border-amberCrosta transition-all flex justify-between items-center">
+                            <span>Funghi Porcini</span>
+                            <span class="text-stone-400 font-bold">+€2.50</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Pannello Riepilogo e Cassa -->
+            <div class="lg:col-span-5 bg-neroCarbone text-beigeFarina rounded-3xl p-6 sm:p-8 shadow-xl sticky top-24">
+                <h3 class="font-serif text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-amberCrosta">Il tuo Ordine</h3>
+                
+                <div class="space-y-4 text-sm mb-8">
+                    <div class="flex justify-between">
+                        <span class="text-stone-400">Dimensione standard:</span>
+                        <span class="font-semibold text-right">Teglia intera (circa 8 tranci)</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-stone-400">Base selezionata:</span>
+                        <span id="selected-base-name" class="font-bold text-right">Macinata a Pietra Tipo 1</span>
+                    </div>
+                    <div class="border-t border-white/10 pt-4 space-y-2">
+                        <span class="text-stone-400 block text-xs uppercase tracking-widest font-bold">Condimenti scelti:</span>
+                        <ul id="selected-toppings-list" class="space-y-1 text-xs">
+                            <li class="text-stone-500 italic">Nessun condimento aggiunto.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-6 mb-8 flex justify-between items-baseline">
+                    <span class="text-base font-medium">Prezzo Stimato Teglia:</span>
+                    <span id="total-price" class="text-3xl font-serif font-bold text-amberCrosta">€ 8.00</span>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="sendOrder()" class="w-full bg-rossoPassata hover:bg-red-700 text-white font-bold py-4 rounded-xl text-center shadow-lg transition-all flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Prenota via WhatsApp
+                    </button>
+                    <p class="text-[10px] text-stone-400 text-center">
+                        La prenotazione è istantanea. Ti risponderemo subito confermandoti l'orario esatto di sfornata.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+    const state = {
+        base: 'farina1',
+        basePrice: 8.00,
+        baseName: 'Macinata a Pietra Tipo 1',
+        toppings: {}
+    };
+
+    const toppingNames = {
+        mozzarella: 'Fior di Latte',
+        pomodoro: 'Passata San Marzano',
+        stracciatella: 'Stracciatella',
+        salsiccia: 'Salsiccia Umbra',
+        patate: 'Patate al Forno',
+        fiori: 'Fiori di Zucca',
+        lardo: 'Lardo di Colonnata',
+        funghi: 'Funghi Porcini'
+    };
+
+    function selectBase(id, price) {
+        state.base = id;
+        state.basePrice = price;
+        state.baseName = id === 'farina1' ? 'Macinata a Pietra Tipo 1' : 'Integrale con Grani Antichi';
+
+        document.querySelectorAll('.base-option').forEach(el => {
+            el.classList.remove('border-rossoPassata', 'border-2');
+            el.classList.add('border-neroCarbone/10', 'border');
+        });
+        const selectedEl = document.getElementById('base-' + id);
+        selectedEl.classList.remove('border-neroCarbone/10', 'border');
+        selectedEl.classList.add('border-rossoPassata', 'border-2');
+
+        updateOrder();
+    }
+
+    function toggleTopping(id, price) {
+        const btn = document.getElementById('top-' + id);
+        if (state.toppings[id]) {
+            delete state.toppings[id];
+            btn.classList.remove('border-rossoPassata', 'bg-rossoPassata/10', 'border-2');
+            btn.classList.add('border-neroCarbone/10', 'bg-white');
+        } else {
+            state.toppings[id] = price;
+            btn.classList.remove('border-neroCarbone/10', 'bg-white');
+            btn.classList.add('border-rossoPassata', 'bg-rossoPassata/10', 'border-2');
+        }
+        updateOrder();
+    }
+
+    function updateOrder() {
+        let total = state.basePrice;
+        const listEl = document.getElementById('selected-toppings-list');
+        listEl.innerHTML = '';
+
+        document.getElementById('selected-base-name').textContent = state.baseName;
+
+        const toppingKeys = Object.keys(state.toppings);
+        if (toppingKeys.length === 0) {
+            listEl.innerHTML = '<li class="text-stone-500 italic">Solo base semplice (Focaccia croccante)</li>';
+        } else {
+            toppingKeys.forEach(key => {
+                const price = state.toppings[key];
+                total += price;
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center text-stone-200';
+                li.innerHTML = `<span>+ ${toppingNames[key]}</span> <span>€ ${price.toFixed(2)}</span>`;
+                listEl.appendChild(li);
+            });
+        }
+
+        document.getElementById('total-price').textContent = `€ ${total.toFixed(2)}`;
+    }
+
+    function sendOrder() {
+        let text = `Ciao! Vorrei prenotare una teglia personalizzata artigianale:\n\nBase: ${state.baseName}\n`;
+        const toppingKeys = Object.keys(state.toppings);
+        if (toppingKeys.length > 0) {
+            text += `Condimenti:\n`;
+            toppingKeys.forEach(key => {
+                text += `- ${toppingNames[key]}\n`;
+            });
+        } else {
+            text += `Nessun condimento aggiunto (Focaccia Bianca).\n`;
+        }
+        let total = state.basePrice;
+        toppingKeys.forEach(key => total += state.toppings[key]);
+        text += `\nTotale Stimato: € ${total.toFixed(2)}\nOrario preferito di sfornata: ...`;
+        
+        const encodedText = encodeURIComponent(text);
+        // Collegamento al numero fornito dall'utente (con prefisso Italia +39)
+        const url = `https://wa.me/3937910382103?text=${encodedText}`;
+        
+        // Copia sicura
+        const tempInput = document.createElement("textarea");
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+
+        showToast("📋 Ordine copiato! Apertura di WhatsApp...");
+        setTimeout(() => {
+            window.open(url, '_blank');
+        }, 800);
+    }
+</script>
+
+<!-- Instagram Experience Section -->
+<section id="social" class="py-24 bg-scuroOpaco text-beigeFarina overflow-hidden border-t border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Spiegazione Strategica Social -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="inline-flex items-center gap-2 bg-rossoPassata/20 border border-rossoPassata/30 px-3 py-1.5 rounded-full text-xs text-amberCrosta font-semibold uppercase tracking-wider">
+                    <i class="fa-brands fa-instagram text-base"></i> Instagram Experience
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-serif font-bold leading-tight">
+                    Come portiamo l'acquolina sul loro smartphone?
+                </h2>
+                <p class="text-stone-300 text-sm sm:text-base leading-relaxed">
+                    Questa è una simulazione reale di come gestiamo la community ogni giorno. Non usiamo grafiche fredde, ma mostriamo la genuinità della teglia calda e coinvolgiamo i follower con storie interattive e suoni catturati direttamente in cucina.
+                </p>
+                
+                <div class="space-y-4">
+                    <div class="flex gap-3 items-start">
+                        <div class="w-8 h-8 rounded-full bg-amberCrosta/10 text-amberCrosta flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                        <p class="text-xs text-stone-400"><strong class="text-beigeFarina block">L'ASMR della Sfornata:</strong> Reel con microfono direzionale sul bancone per sentire il coltello che taglia la crosta.</p>
+                    </div>
+                    <div class="flex gap-3 items-start">
+                        <div class="w-8 h-8 rounded-full bg-amberCrosta/10 text-amberCrosta flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                        <p class="text-xs text-stone-400"><strong class="text-beigeFarina block">Il Sondaggio delle Ore 11:30:</strong> Catturiamo gli indecisi sulla pausa pranzo facendoli votare direttamente nelle storie.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 flex justify-center">
+                <div class="w-full max-w-sm bg-black rounded-[45px] p-3.5 shadow-2xl border-4 border-stone-800 relative">
+                    <!-- Altoparlante/Sensore superiore telefono -->
+                    <div class="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-4 bg-stone-900 rounded-full z-10"></div>
+                    
+                    <!-- Schermo Interno -->
+                    <div class="bg-stone-950 rounded-[35px] overflow-hidden text-white font-sans text-xs select-none">
+                        
+                        <!-- Instagram Header Mockup -->
+                        <div class="p-3 border-b border-white/5 flex justify-between items-center bg-stone-900/40">
+                            <span class="font-bold text-sm">lacrosta_pizzeria</span>
+                            <div class="flex gap-3 text-sm">
+                                <i class="fa-regular fa-bell"></i>
+                                <i class="fa-solid fa-ellipsis"></i>
+                            </div>
+                        </div>
+
+                        <!-- Instagram Stories Widget (Interattivo) -->
+                        <div class="p-4 bg-stone-900/20 border-b border-white/5">
+                            <div class="bg-gradient-to-tr from-amberCrosta to-rossoPassata p-1 rounded-2xl">
+                                <div class="bg-stone-900 p-4 rounded-xl space-y-3 relative overflow-hidden">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-rossoPassata border border-amberCrosta flex items-center justify-center text-[8px] font-bold">LC</div>
+                                        <div>
+                                            <p class="font-bold text-[10px]">lacrosta_pizzeria</p>
+                                            <p class="text-[8px] text-stone-400">Storie (Ore 11:00) • Sponsorizzato</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sondaggio Interattivo Funzionante -->
+                                    <div class="space-y-2 relative z-10">
+                                        <p class="text-xs font-semibold">Oggi pausa pranzo leggera o sgarro artigianale totale?</p>
+                                        <div class="grid grid-cols-2 gap-2 text-center text-[10px] font-bold">
+                                            <button id="poll-btn-1" onclick="votePoll(1)" class="bg-white/10 hover:bg-white/20 border border-white/20 py-2.5 rounded-lg transition-all">
+                                                Leggero 🥗
+                                            </button>
+                                            <button id="poll-btn-2" onclick="votePoll(2)" class="bg-white/10 hover:bg-white/20 border border-white/20 py-2.5 rounded-lg transition-all">
+                                                Sgarro! 🍕
+                                            </button>
+                                        </div>
+                                        <p id="poll-result" class="text-[9px] text-amberCrosta text-center hidden font-bold animate-pulse"></p>
+                                    </div>
+                                    
+                                    <div class="absolute bottom-[-20px] right-[-10px] w-20 h-20 bg-amberCrosta/10 rounded-full blur-xl"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instagram Feed Post (Reel Mockup con Foto Reale) -->
+                        <div class="p-3 bg-stone-900/10">
+                            <div class="relative rounded-xl overflow-hidden aspect-video bg-amber-950 flex items-center justify-center border border-white/5 group">
+                                <img src="https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&q=80&w=600" alt="Instagram Post Pizza" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-black/40"></div>
+                                
+                                <div class="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[8px] tracking-wide uppercase font-bold text-amberCrosta flex items-center gap-1 z-10">
+                                    <i class="fa-solid fa-volume-high"></i> ASMR Reel
+                                </div>
+                                <p class="text-center font-serif text-sm italic z-10 px-4 text-white">Sfornata di Margherita • Ore 12:00</p>
+                                
+                                <button onclick="playCrackSound()" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                    <div class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Didascalia del post -->
+                            <div class="mt-3 space-y-1 text-white">
+                                <p><strong class="mr-1">lacrosta_pizzeria</strong>Sfornata caldissima. Sentite che rumore fa il pranzo perfetto di oggi... 😍👇</p>
+                                <p class="text-stone-400 text-[10px]">#pizzataglio #asmrfood #roma #artigianale</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script>
+    function votePoll(option) {
+        const btn1 = document.getElementById('poll-btn-1');
+        const btn2 = document.getElementById('poll-btn-2');
+        const result = document.getElementById('poll-result');
+
+        btn1.disabled = true;
+        btn2.disabled = true;
+
+        if (option === 1) {
+            btn1.className = "bg-rossoPassata text-white border border-rossoPassata py-2.5 rounded-lg text-center font-bold";
+            btn2.className = "bg-white/5 opacity-50 border border-white/10 py-2.5 rounded-lg text-center font-bold";
+            result.textContent = "🗳️ Votato! Il 24% ha risposto 'Leggero'. Il 76% vuole l'impasto a 48h!";
+        } else {
+            btn1.className = "bg-white/5 opacity-50 border border-white/10 py-2.5 rounded-lg text-center font-bold";
+            btn2.className = "bg-rossoPassata text-white border border-rossoPassata py-2.5 rounded-lg text-center font-bold";
+            result.textContent = "🗳️ Votato! L'88% ha scelto lo 'Sgarro Artigianale'! Saggia scelta.";
+        }
+        result.classList.remove('hidden');
+    }
+</script>
+
+<!-- Sezione FAQ -->
+<section class="py-24 bg-beigeFarina/20 border-t border-neroCarbone/5">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center space-y-4 mb-16">
+            <h2 class="text-rossoPassata font-bold text-sm uppercase tracking-widest">Domande Frequenti</h2>
+            <p class="text-3xl font-serif font-bold text-neroCarbone">Hai dei dubbi? Ti rispondiamo</p>
+        </div>
+
+        <div class="space-y-4">
+            
+            <!-- Domanda 1 -->
+            <div class="bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(1)" class="w-full text-left p-6 font-serif text-lg font-bold flex justify-between items-center text-neroCarbone hover:bg-beigeFarina/10">
+                    <span>Come posso riscaldare la pizza a casa se la compro d'asporto?</span>
+                    <i id="faq-icon-1" class="fa-solid fa-chevron-down text-sm text-stone-400 transition-transform"></i>
+                </button>
+                <div id="faq-body-1" class="hidden px-6 pb-6 text-sm text-stone-600 leading-relaxed border-t border-stone-50">
+                    Per renderla di nuovo croccantissima come appena sfornata, basta scaldare una padella antiaderente sul fuoco per 2 minuti, adagiarvi sopra il trancio a fiamma media coprendolo con un coperchio per circa 3 minuti. Non usare mai il forno a microonde!
+                </div>
+            </div>
+
+            <!-- Domanda 2 -->
+            <div class="bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(2)" class="w-full text-left p-6 font-serif text-lg font-bold flex justify-between items-center text-neroCarbone hover:bg-beigeFarina/10">
+                    <span>Cosa significa idratazione all'80%?</span>
+                    <i id="faq-icon-2" class="fa-solid fa-chevron-down text-sm text-stone-400 transition-transform"></i>
+                </button>
+                <div id="faq-body-2" class="hidden px-6 pb-6 text-sm text-stone-600 leading-relaxed border-t border-stone-50">
+                    Significa che ogni chilo di farina viene lavorato con l'80% di acqua (molto più del 50-60% delle pizze classiche commerciali). Questo garantisce un impasto leggero, soffice internamente grazie alle bolle d'aria e incredibilmente digeribile.
+                </div>
+            </div>
+
+            <!-- Domanda 3 -->
+            <div class="bg-white border border-neroCarbone/5 rounded-2xl overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(3)" class="w-full text-left p-6 font-serif text-lg font-bold flex justify-between items-center text-neroCarbone hover:bg-beigeFarina/10">
+                    <span>Posso prenotare in anticipo per il weekend?</span>
+                    <i id="faq-icon-3" class="fa-solid fa-chevron-down text-sm text-stone-400 transition-transform"></i>
+                </button>
+                <div id="faq-body-3" class="hidden px-6 pb-6 text-sm text-stone-600 leading-relaxed border-t border-stone-50">
+                    Assolutamente sì. Consigliamo di prenotare le teglie speciali entro il venerdì sera per garantirti il tuo impasto preferito, poiché lavorando a lenta lievitazione i nostri impasti giornalieri sono limitati.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+    function toggleFaq(id) {
+        const body = document.getElementById('faq-body-' + id);
+        const icon = document.getElementById('faq-icon-' + id);
+        const isHidden = body.classList.contains('hidden');
+
+        if (isHidden) {
+            body.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            body.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+</script>
+
+<!-- Footer -->
+<footer class="bg-neroCarbone text-beigeFarina/80 border-t border-white/5 py-12 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div class="space-y-2 text-center sm:text-left">
+            <span class="text-rossoPassata text-2xl font-serif font-bold tracking-tight block">La Crosta</span>
+            <p class="text-stone-400">Pizzeria al Taglio Artigianale • Lievitazione Lenta • Passione Locale</p>
+        </div>
+        <div class="flex gap-4">
+            <a href="https://wa.me/3937910382103" class="hover:text-amberCrosta transition-colors text-base"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" class="hover:text-amberCrosta transition-colors text-base"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="hover:text-amberCrosta transition-colors text-base"><i class="fa-brands fa-facebook"></i></a>
+        </div>
+        <div class="text-center sm:text-right text-stone-500">
+            <p>&copy; 2026 La Crosta S.r.l. Tutti i diritti riservati.</p>
+            <p class="mt-1">Creato per la presentazione della Variante Strategica 1 di Comunicazione IG.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Privacy Policy & Cookie Banner (GDPR compliant) -->
+<div id="cookie-banner" class="fixed bottom-0 inset-x-0 bg-stone-900 border-t border-white/10 text-white p-4 sm:p-6 z-50 transform translate-y-full transition-transform duration-500 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-2 max-w-3xl">
+            <h4 class="font-bold text-sm sm:text-base flex items-center gap-2 text-amberCrosta">
+                <i class="fa-solid fa-cookie-bite"></i> Impostazioni sulla Privacy e Cookie
+            </h4>
+            <p class="text-xs text-stone-300 leading-relaxed">
+                Utilizziamo cookie tecnici per farti vivere un'esperienza migliore sul nostro sito e cookie analitici di terze parti per misurare l'efficacia delle nostre campagne Instagram. Continuando, acconsenti all'uso dei cookie. Puoi consultare la nostra <a href="#" onclick="openPrivacyModal(); return false;" class="underline hover:text-amberCrosta transition-colors">Informativa Privacy</a> per saperne di più.
+            </p>
+        </div>
+        <div class="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
+            <button onclick="acceptCookies(false)" class="w-full sm:w-auto px-4 py-2.5 rounded-lg border border-white/20 text-xs font-semibold hover:bg-white/5 transition-all">
+                Solo Tecnici
+            </button>
+            <button onclick="acceptCookies(true)" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-amberCrosta hover:bg-amber-500 text-neroCarbone text-xs font-bold transition-all shadow-lg">
+                Accetta Tutti
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal Overlay -->
+<div id="privacy-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white text-neroCarbone rounded-2xl max-w-lg w-full p-6 shadow-2xl relative flex flex-col max-h-[80vh]">
+        <button onclick="closePrivacyModal()" class="absolute top-4 right-4 text-stone-400 hover:text-neroCarbone w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 class="font-serif text-xl font-bold text-rossoPassata pb-4 border-b border-stone-100 mb-4">Informativa sulla Privacy</h3>
+        <div class="text-xs text-stone-600 space-y-4 overflow-y-auto pr-2 leading-relaxed">
+            <p><strong>1. Trattamento dei Dati Personali</strong><br>La Crosta rispetta la tua privacy. I dati da te digitati all'interno del configuratore della teglia (scelte degli ingredienti e base dell'impasto) non vengono salvati su alcun database server della nostra azienda.</p>
+            <p><strong>2. Esportazione verso WhatsApp</strong><br>Nel momento in cui fai clic sul bottone "Prenota via WhatsApp", i dettagli delle tue scelte culinarie vengono formattati e trasferiti in tutta sicurezza sul client ufficiale di WhatsApp installato sul tuo dispositivo per concludere la prenotazione direttamente sul nostro canale dedicato.</p>
+            <p><strong>3. Cookie e Tracciamento</strong><br>Il presente sito si serve unicamente di cookie tecnici temporanei per garantire l'efficacia delle interfacce grafiche ed evitare di riproporti il banner informativo della privacy ad ogni caricamento della pagina web.</p>
+            <p>Per qualsiasi delucidazione o per esercitare i tuoi diritti puoi scrivere al titolare all'indirizzo contatti sul canale di messaggistica preposto.</p>
+        </div>
+        <div class="border-t border-stone-100 pt-4 mt-4 flex justify-end">
+            <button onclick="closePrivacyModal()" class="bg-neroCarbone hover:bg-stone-800 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors">
+                Ho capito
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gestione Banner Cookie & Privacy con localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+        const consent = localStorage.getItem('crostaCookieConsent');
+        if (!consent) {
+            setTimeout(() => {
+                const banner = document.getElementById('cookie-banner');
+                banner.classList.remove('translate-y-full');
+            }, 1000);
+        }
+    });
+
+    function acceptCookies(all) {
+        localStorage.setItem('crostaCookieConsent', all ? 'all' : 'technical');
+        const banner = document.getElementById('cookie-banner');
+        banner.classList.add('translate-y-full');
+        showToast("✅ Preferenze privacy salvate con successo!");
+    }
+
+    function openPrivacyModal() {
+        document.getElementById('privacy-modal').classList.remove('hidden');
+    }
+
+    function closePrivacyModal() {
+        document.getElementById('privacy-modal').classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>
